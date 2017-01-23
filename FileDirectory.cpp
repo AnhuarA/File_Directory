@@ -2,6 +2,7 @@
 #include "FileDirectory.h"
 #include <iostream>
 
+
 using namespace std;
 
 FileDirectory::FileDirectory() { // : to initialize all entries in the fileDirectory and FAT16 to be 0; i.e.safe values.
@@ -33,7 +34,11 @@ bool FileDirectory::create(char   filename[], int numberBytes) {
 					availableClusters++;
 			}
 			if (availableClusters < clustersNeeded) {
-				cout << "\nNot enough empty clusters" << endl;
+				cout << "Not enough empty clusters for ";
+				for (int k = 0; k < 8; k++) {
+						cout << filename[k];
+				}
+				cout << "\n\n";
 				return false;//Not enought empty clusters
 			}
 			else return true;
@@ -211,6 +216,7 @@ void FileDirectory::printClusters(char filename[]) {
 	int i, j, k;
 	unsigned short int firstClusterAddress, nextClusterAddress, clusterAddress;
 	unsigned short int storeClusterLocation[256];
+	int lineCount = 1;
 //(1)	to check if the file to be printed; filename[]; is in the Directory.If not; return false.
 	for (i = 0; i < 4; i++) {
 		for (j = 0; j < 8; j++) {
@@ -222,8 +228,8 @@ void FileDirectory::printClusters(char filename[]) {
 			firstClusterAddress = fileDirectory[i][26] + (fileDirectory[i][27] << 8);
 //(3)	use the first cluster address to get all cluster addresses from the FAT - 16;
 			clusterAddress = firstClusterAddress;
-			
-			cout << "\Printing cluster locations for ";
+			//Print file name
+			cout << "\nPrinting cluster locations for ";
 			for (int j = 0; j < 8; j++) {
 				if (fileDirectory[i][j] != 0)
 					cout << fileDirectory[i][j];
@@ -234,12 +240,19 @@ void FileDirectory::printClusters(char filename[]) {
 				cout << fileDirectory[i][j];
 			}
 			cout << endl;
-			cout << clusterAddress;
+			cout << clusterAddress << " -> ";
+	
+			//using the storeClusterLocation array, print out 6 clusters per line
 			for (k = 0; k < 256 && clusterAddress < 255; k++)
 			{
 				storeClusterLocation[k] = FAT16[clusterAddress];
 				clusterAddress = FAT16[clusterAddress];
-				cout << "\n" << clusterAddress;
+				cout  << clusterAddress;
+				lineCount++;
+				if (clusterAddress != 255)
+					cout << " -> ";
+				if (lineCount % 6 == 0)
+					cout << endl;
 			}
 
 			cout << endl;
@@ -300,6 +313,9 @@ void FileDirectory::printData(char filename[]) {
 	int i, j, k;
 	unsigned short int firstClusterAddress, nextClusterAddress, clusterAddress;
 	unsigned short int storeClusterLocation[256];
+	unsigned short int index;
+
+
 
 	//Look for input file
 	for (i = 0; i < 4; i++) {
@@ -308,22 +324,38 @@ void FileDirectory::printData(char filename[]) {
 				break;
 		}
 		if (j == 8) {
+			//Print out action
+			cout << "\nPrinting data in ";
+			for (int j = 0; j < 8; j++) {
+				if (fileDirectory[i][j] != 0)
+					cout << fileDirectory[i][j];
+			}
+			cout << '.';
+
+			for (int j = 8; j < 11; j++) {
+				cout << fileDirectory[i][j];
+			}
+			cout << endl;
 //(1)	use the file name to get the file information from the File Directory; including the first cluster address;
 			firstClusterAddress = fileDirectory[i][26] + (fileDirectory[i][27] << 8);
 //(2)	use the first cluster address to get all cluster addresses from the FAT - 16;
 			clusterAddress = firstClusterAddress;
-			for (k = 0; k < 256 && clusterAddress < 255; k++)
+			storeClusterLocation[0] = clusterAddress;
+			for (k = 1; k < 256 && clusterAddress < 255; k++)
 			{
 				storeClusterLocation[k] = FAT16[clusterAddress];
 				clusterAddress = FAT16[clusterAddress];
 			}
 //(3)	use cluster address to read the data of the file.Use the file length to print these data in hexadecimal format.
-			for (int M = 0; M < k; M++) {
+			int lineCount = 0;//variable used for formatting output
+			for (int M = 0; M < k -1; M++) {
 				for (int L = 0; L < 4; L++) {
-					cout << data[(storeClusterLocation[M] * 4) + L] << " ";
-					if (M % 4 == 0)
-						cout << endl;
-					
+					index = ((storeClusterLocation[M]) * 4) + L;
+					cout << (int)data[index] << "\t"; //Outputting data as the integer of the char array to correctly output data
+					lineCount++;
+					//start a new line every 5 data outputs
+					if (lineCount % 5 == 0) 
+						cout << endl;		
 				}
 			}
 		}

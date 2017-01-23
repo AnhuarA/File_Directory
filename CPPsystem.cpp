@@ -20,27 +20,30 @@ int main()
 	FileDirectory f1;	//Creates a new file directory object
 
 	//1.	create and write a file; file1;  of 40 bytes;
-
-	if (f1.create("file1", 40)) {
-		f1.write("file1", "txt", 40, f1Data, 2017, 01, 21, 14, 52, 43);
-		cout << "file1 written.\n\n";
+	//Using file name longer than 8 characters to test output
+	if (f1.create("file1extended", 40)) {
+		f1.write("file1extended", "txt", 40, f1Data, 2017, 01, 21, 14, 52, 43);
+		cout << "file1 written\n\n";
 	}
 	//2.	create and write a file; file2;  of 200 bytes;
 	if (f1.create("file2", 200)) {
 		f1.write("file2", "txt", 200, f2Data, 2017, 01, 20, 8, 30, 14);
-		cout << "file2 written.\n\n";
+		cout << "file2 written\n\n";
 	}
 	//3.	create and write a file; file3;  of 300 bytes;
 	if (f1.create("file3", 300)) {
 		f1.write("file3", "doc", 300, f3Data, 2016, 12, 13, 17, 52, 43);
-		cout << "file3 written.\n\n";
+		cout << "file3 written\n\n";
 	}
 	//4.	create and write a file; file4;  of 500 bytes.
-	f1.create("file4", 500);
+	if (f1.create("file4", 500)) {
+		f1.write("file4", "cpp", 500, f4Data, 2017, 01, 17, 13, 12, 13);
+		cout << "file4 written\n\n";
+	}
 
 	//5.	delete file2;
 	if(f1.deleteFile("file2"))
-		cout << "file2 deleted.\n\n";
+		cout << "file2 deleted\n\n";
 
 	//6.	create and write a file; file4;  of 500 bytes.
 	if (f1.create("file4", 500)) {
@@ -49,6 +52,7 @@ int main()
 	}
 
 	//Print directory
+	cout << "\nPrinting file directory: \n";
 	f1.printDirectory();
 	//Print clusters for each file
 	f1.printClusters("file1");
